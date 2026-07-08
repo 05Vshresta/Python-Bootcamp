@@ -39,7 +39,8 @@ This repository contains the Python programs I completed during the Python Bootc
 10. student_result_system.py
 
 ## 🎯 Objective
-To build a strong foundation in Python programming by practicing coding exercises and applying programming concepts through real-world examples.
+To build a strong foundation in Python programming by practicing coding exercises and applying programming concepts through real-world examples
+
 
 ## 🚀 Thank You
 Thank you for visiting my Python Bootcamp repository. I will continue updating this repository with more Python programs as I learn.
