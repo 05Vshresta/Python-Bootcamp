@@ -22,6 +22,7 @@ St.Mary's Engineering College
 - Pattern Programs
 - File Handling & Exception handling 
 - Git & GitHub
+- SQLite3
 
 ## 📚 Bootcamp Overview
 This repository contains the Python programs I completed during the Python Bootcamp. It demonstrates my understanding of Python fundamentals through hands-on practice. The repository includes beginner-friendly programs covering problem-solving, programming logic, and core Python concepts.
@@ -37,6 +38,7 @@ This repository contains the Python programs I completed during the Python Bootc
 8. patterns.py
 9. modules.py
 10. student_result_system.py
+11. Student_Management_Application.py
 
 ## 🎯 Objective
 To build a strong foundation in Python programming by practicing coding exercises and applying programming concepts through real-world examples
