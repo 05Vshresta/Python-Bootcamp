@@ -27,10 +27,8 @@ def add_expenses():
     INSERT INTO expenses (date, category, amount, description)
     VALUES (?, ?, ?, ?)
     """, (date, category, amount, description))
-
     conn.commit()
     print("Expense added successfully.")
-
 
 # View all expenses
 def view_expenses():
@@ -48,7 +46,6 @@ def view_expenses():
         print("Amount     :", record[3])
         print("Description:", record[4])
         print("====================================")
-
 
 # Search expenses by category
 def search_expenses():
@@ -71,9 +68,7 @@ def search_expenses():
             print("Amount     :", record[3])
             print("Description:", record[4])
             print("====================================")
-
         print("Expenses found in category.")
-
 
 # Update expenses
 def update_expenses():
