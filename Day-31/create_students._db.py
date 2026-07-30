@@ -8,10 +8,10 @@ conn = sqlite3.connect("student_mngmt_system.db")
 cursor = conn.cursor()
 print("Database created successfully.")
 
-#===========Student Table===================================
+#=========== Student Table ===================================
 cursor.execute(
     '''CREATE TABLE IF NOT EXISTS students(
-    student_id INTEGER PRIMARY KEY ,
+    student_id INTEGER PRIMARY KEY,
     name TEXT NOT NULL,
     mobile TEXT,
     email TEXT,
@@ -19,7 +19,7 @@ cursor.execute(
     attendance INTEGER DEFAULT 0)''')
 print("Student Table created successfully.")
 
-#==========Attendance Table====================================
+#========== Attendance Table ====================================
 cursor.execute(
     '''CREATE TABLE IF NOT EXISTS attendance(
     attendance_id INTEGER PRIMARY KEY,
@@ -30,7 +30,7 @@ cursor.execute(
 print("Attendance Table created successfully.")
 conn.commit()
 
-#=============SQL Query==================================
+#============= SQL Query ==================================
 cursor.execute(
     '''SELECT name FROM sqlite_master 
     WHERE type="table" '''
@@ -40,14 +40,14 @@ print("Tables in the database:")
 for table in tables:
     print(table[0])
 
-#=================Display student table structure=========================
+#=================Display student table structure =========================
 cursor.execute("PRAGMA table_info(students)")
 columns = cursor.fetchall()
 print("Student Table Structure:")
 for column in columns:
     print(column)
 
-#===================Display Attendance table ===============================
+#=================== Display Attendance table structure ===============================
 cursor.execute("PRAGMA table_info(attendance)")
 columns = cursor.fetchall()
 print("Attendance Table Structure:")
