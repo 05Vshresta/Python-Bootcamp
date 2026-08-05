@@ -70,13 +70,38 @@ Status      : {employee[6]}
 --------------------------------------------
 """)
 
+#=================== search by id ===================
+@staticmethod
+def search_by_id():
+    employee_id = int(input("Enter the Employee Id :"))
+    cursor.execute("""
+    SELECT* FROM employees
+    WHERE employee_id = ?""",(employee_id,))
+    employee = cursor.fetchone()
+    if employee == 0:
+        print("No employee data is found")
+    else:
+        print("=========Employee Details=========")
+        print(f"""
+        Employee ID : {employee[0]}
+        Name : {employee[1]}
+        Mobile : {employee[2]}
+        Email : {employee[3]}
+        Department : {employee[4]}
+        Salary : ₹{employee[5]:,.2f}
+        Status : {employee[6]}
+        """)
+    print("Employee is not found")
+    
+
 # ================== Main Menu ==================
 while True:
     print("""
 ================== Employee Management System ==================
 1. Register Employee
 2. Display Employees
-3. Exit
+3. Search Employee by ID
+4. Exit
 """)
 
     choice = input("Enter your choice: ")
@@ -102,6 +127,9 @@ while True:
         Employee.display_employees()
 
     elif choice == '3':
+        Employee.search_by_id()
+
+    elif choice == '4':
         print("Thank you for using Employee Management System.")
         conn.close()
         break
