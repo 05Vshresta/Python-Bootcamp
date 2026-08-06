@@ -10,13 +10,12 @@ print("Database connection established successfully!")
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS employees(
     employee_id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
+    name TEXT,
     mobile TEXT,
     email TEXT,
-    department TEXT NOT NULL,
-    salary REAL NOT NULL,
-    status INTEGER DEFAULT 0
-)
+    department TEXT,
+    salary REAL,
+    status INTEGER DEFAULT 0 )
 """)
 
 conn.commit()
@@ -45,7 +44,7 @@ class Employee:
         ))
 
         conn.commit()
-        print(f"\nEmployee '{self.name}' registered successfully!")
+        print(f"\n '{self.name}' is an employee registered successfully!")
 
     # ================== Display Employees ==================
     @staticmethod
@@ -60,48 +59,145 @@ class Employee:
 
             for employee in employees:
                 print(f"""
-Employee ID : {employee[0]}
-Name        : {employee[1]}
-Mobile      : {employee[2]}
-Email       : {employee[3]}
-Department  : {employee[4]}
-Salary      : ₹{employee[5]:,.2f}
-Status      : {employee[6]}
---------------------------------------------
-""")
+                    Employee ID : {employee[0]}
+                    Name        : {employee[1]}
+                    Mobile      : {employee[2]}
+                    Email       : {employee[3]}
+                    Department  : {employee[4]}
+                    Salary      : {employee[5]}
+                    Status      : {employee[6]}
+                    --------------------------------------------
+                """)
 
-#=================== search by id ===================
-@staticmethod
-def search_by_id():
-    employee_id = int(input("Enter the Employee Id :"))
-    cursor.execute("""
-    SELECT* FROM employees
-    WHERE employee_id = ?""",(employee_id,))
-    employee = cursor.fetchone()
-    if employee == 0:
-        print("No employee data is found")
-    else:
-        print("=========Employee Details=========")
-        print(f"""
-        Employee ID : {employee[0]}
-        Name : {employee[1]}
-        Mobile : {employee[2]}
-        Email : {employee[3]}
-        Department : {employee[4]}
-        Salary : ₹{employee[5]:,.2f}
-        Status : {employee[6]}
-        """)
-    print("Employee is not found")
-    
+#================Employee search by id=====================
+
+    @staticmethod
+    def search_employee_by_id(employee_id):
+        cursor.execute("SELECT * FROM employees WHERE employee_id = ?", (employee_id,))
+        employee = cursor.fetchone()
+
+        if employee:
+            print("============================= Employee Details =============================")
+            print(f"""
+            Employee ID : {employee[0]}
+            Name        : {employee[1]}
+            Mobile      : {employee[2]}
+            Email       : {employee[3]}
+            Department  : {employee[4]}
+            Salary      : {employee[5]}
+            Status      : {employee[6]}
+            --------------------------------------------
+            """) 
+            print("Employee found successfully!")
+        else:
+            print(f"\nEmployee with ID {employee_id} not found.")
+
+    #=====================Employee search by name=========================
+    def search_by_name():
+        name = input("Enter employee name to search: ")
+        cursor.execute("SELECT * FROM employees WHERE name LIKE ?", (" % " + {name} + " % ",))
+        employee = cursor.fetchall()
+
+        if employee:
+            print("============================= Employee Details =============================")
+            print(f"""
+            Employee ID : {employee[0]}
+            Name        : {employee[1]}
+            Mobile      : {employee[2]}
+            Email       : {employee[3]}
+            Department  : {employee[4]}
+            Salary      : {employee[5]}
+            Status      : {employee[6]}
+            --------------------------------------------
+            """) 
+            print("Employee found successfully!")
+        else:
+            print(f"\nEmployee with name '{name}' not found.")
+
+    #=====================Employee search by department======================
+    def search_department(self, department):
+        cursor.execute("SELECT * FROM employees WHERE department = ?", (department,))
+        employees = cursor.fetchall()
+
+        if employees:
+            print("============================= Employee Details =============================")
+            for employee in employees:
+                print(f"""
+                Employee ID : {employee[0]}
+                Name        : {employee[1]}
+                Mobile      : {employee[2]}
+                Email       : {employee[3]}
+                Department  : {employee[4]}
+                Salary      : {employee[5]}
+                Status      : {employee[6]}
+                --------------------------------------------
+                """)
+            print(f"Found {len(employees)} employee(s) in the '{department}' department.")
+        else:
+            print(f"\nNo employees found in the '{department}' department.")
+
+    #==============================Update employee ========================
+    def update_employee():
+        employee_id = int(input("Enter employee id to update :"))
+        cursor.execute("SELECT * FROM employees WHERE employee_id = ?", (employee_id,))
+        employee = cursor.fetchone()
+
+        if employee:
+            print("=============================Current Employee Details =============================")
+            print(f"""
+            Employee ID : {employee[0]}
+            Name        : {employee[1]}
+            Mobile      : {employee[2]}
+            Email       : {employee[3]}
+            Department  : {employee[4]}
+            Salary      : {employee[5]}
+            Status      : {employee[6]}
+            --------------------------------------------
+            """)
+            print("Employee found successfully!")
+            print("============================= Update Employee Details =============================")
+            name = input("Enter the name :")
+            mobile = input("Enter the mobile no :")
+            email = input("Enter the email :")
+            department = input("Enter the department :")
+            
+
+            cursor.execute("""
+                UPDATE employees
+
+                SET
+                name = ?,
+                mobile = ?,
+                email = ?,
+                department = ?,
+                salary = ?,
+
+                WHERE employee_id = ?
+                """,(
+                    name,
+                    mobile,
+                    email,
+                    department,
+                    salary,
+                    employee_id
+                ))
+
+        else:
+            print(f"\nEmployee with ID {employee_id} not found.")
+
+
 
 # ================== Main Menu ==================
 while True:
-    print("""
+    print(""" 
 ================== Employee Management System ==================
 1. Register Employee
 2. Display Employees
 3. Search Employee by ID
-4. Exit
+4. Search Employee by Name
+5. Search Employee by Department
+6. Update Employee
+7. Exit
 """)
 
     choice = input("Enter your choice: ")
@@ -113,13 +209,8 @@ while True:
         mobile = input("Enter employee mobile: ")
         email = input("Enter employee email: ")
         department = input("Enter employee department: ")
-
-        try:
-            salary = float(input("Enter employee salary: "))
-        except ValueError:
-            print("Invalid salary! Please enter a numeric value.")
-            continue
-
+        salary = float(input("Enter employee salary: "))
+        
         employee = Employee(name, mobile, email, department, salary)
         employee.register()
 
@@ -127,9 +218,20 @@ while True:
         Employee.display_employees()
 
     elif choice == '3':
-        Employee.search_by_id()
+        employee_id = int(input("Enter employee ID to search: "))
+        Employee.search_employee_by_id(employee_id)
 
     elif choice == '4':
+        Employee.search_by_name(name)
+
+    elif choice == '5':
+        department = input("Enter department to search: ")
+        Employee.search_employee_by_department(department)
+
+    elif choice == '6':
+        Employee.update_employee()
+
+    elif choice == '7':
         print("Thank you for using Employee Management System.")
         conn.close()
         break
