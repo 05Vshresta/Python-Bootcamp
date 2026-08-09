@@ -96,7 +96,7 @@ class Employee:
     @staticmethod
     def search_by_name():
         name = input("Enter employee name to search: ")
-       
+
         cursor.execute("""SELECT * FROM employees WHERE name LIKE ?""",("%" + name + "%",))
         employees = cursor.fetchall()
 
@@ -192,7 +192,43 @@ class Employee:
         else:
             print(f"\nEmployee with ID {employee_id} not found.")
 
+#====================Delete Employee=========================
+    @staticmethod
+    def delete_employee():
 
+        employee_id = int(input("Enter employee id to delete :"))
+
+        cursor.execute(
+        """SELECT * FROM employees
+        WHERE employee_id = ?
+        """, (employee_id,))
+        employee = cursor.fetchone()
+
+        if employee:
+            print("=============================Current Employee Details ============================")
+            print(f"""
+            Employee ID : {employee[0]}
+            Name        : {employee[1]}
+            Mobile      : {employee[2]}
+            Email       : {employee[3]}
+            Department  : {employee[4]}
+            Salary      : {employee[5]}
+            Status      : {employee[6]}
+            --------------------------------------------
+            """)
+
+            confirm = input("Are you sure you want to delete this employee? (yes/no): ").upper()
+            if confirm == "YES":
+                cursor.execute(
+                    """DELETE FROM employees
+                    WHERE employee_id = ?
+                    """, (employee_id,))
+                conn.commit()
+                print(f"Employee with ID {employee_id} deleted successfully!")
+            else:
+                print(f"Employee with ID {employee_id} deletion cancelled")
+        else:
+            print(f"\nEmployee with ID {employee_id} not found.")
 
 # ================== Main Menu ==================
 while True:
@@ -204,7 +240,8 @@ while True:
 4. Search Employee by Name
 5. Search Employee by Department
 6. Update Employee
-7. Exit
+7. Delete Employee
+8. Exit
 """)
 
     choice = input("Enter your choice: ")
@@ -238,7 +275,14 @@ while True:
     elif choice == '6':
         Employee.update_employee()
 
+
     elif choice == '7':
+        Employee.delete_employee()
+        Employee.display_employees()  # Display updated employee list after deletion
+
+
+
+    elif choice == '8':
         print("Thank you for using Employee Management System.")
         conn.close()
         break
