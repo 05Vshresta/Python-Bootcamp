@@ -192,7 +192,7 @@ class Employee:
         else:
             print(f"\nEmployee with ID {employee_id} not found.")
 
-#====================Delete Employee=========================
+#==================== Delete Employee =========================
     @staticmethod
     def delete_employee():
 
@@ -230,6 +230,71 @@ class Employee:
         else:
             print(f"\nEmployee with ID {employee_id} not found.")
 
+#======================== Mark Employee status ==========================================
+
+def mark_employee_status():
+    employee_id = int(input("Enter employee id to mark status :"))
+
+    cursor.execute(
+        """SELECT * FROM employees
+        WHERE employee_id = ?
+        """, (employee_id,))
+    employee = cursor.fetchone()
+
+    if employee:
+        print("=============================Current Employee Details ============================")
+        print(f"""
+        Employee ID : {employee[0]}
+        Name        : {employee[1]}
+        Mobile      : {employee[2]}
+        Email       : {employee[3]}
+        Department  : {employee[4]}
+        Salary      : {employee[5]}
+        Status      : {employee[6]}
+        --------------------------------------------
+        """)
+
+        status = int(input("Enter the status (0 for inactive, 1 for active): "))
+
+        cursor.execute(
+            """UPDATE employees
+            SET status = ?
+            WHERE employee_id = ?
+            """, (status, employee_id))
+        conn.commit()
+        print(f"Employee with ID {employee_id} status updated successfully!")
+    else:
+        print(f"\nEmployee with ID {employee_id} not found.")
+
+
+#==================================== Employee status report ==========================================
+
+def attendance_report():
+    cursor.execute("""
+    SELECT employee_id,
+        name,
+        department,
+        status
+    FROM employees""")
+
+    employees = cursor.fetchall()
+
+    if not employees:
+        print("\nNo employees found.")
+    else:
+        print("\n============== Employee Status Report ==============")
+
+        for employee in employees:
+            status = "Active" if employee[3] == 1 else "Inactive"
+            print(f"""
+            Employee ID : {employee[0]}
+            Name        : {employee[1]}
+            Department  : {employee[2]}
+            Status      : {status}
+            --------------------------------------------
+            """)
+
+
 # ================== Main Menu ==================
 while True:
     print("""
@@ -241,7 +306,9 @@ while True:
 5. Search Employee by Department
 6. Update Employee
 7. Delete Employee
-8. Exit
+8. Mark Employee Status
+9. Employee Status Report   
+10. Exit
 """)
 
     choice = input("Enter your choice: ")
@@ -280,9 +347,13 @@ while True:
         Employee.delete_employee()
         Employee.display_employees()  # Display updated employee list after deletion
 
-
-
     elif choice == '8':
+        mark_employee_status()
+
+    elif choice == '9':
+        attendance_report()
+
+    elif choice == '10':
         print("Thank you for using Employee Management System.")
         conn.close()
         break
