@@ -69,7 +69,7 @@ class Employee:
                     --------------------------------------------
                 """)
 
-#================Employee search by id=====================
+    #================Employee search by id=====================
 
     @staticmethod
     def search_employee_by_id(employee_id):
@@ -170,7 +170,6 @@ class Employee:
 
             cursor.execute("""
                 UPDATE employees
-
                 SET
                 name = ?,
                 mobile = ?,
@@ -230,12 +229,10 @@ class Employee:
         else:
             print(f"\nEmployee with ID {employee_id} not found.")
 
-#======================== Mark Employee status ==========================================
-
-def mark_employee_status():
-    employee_id = int(input("Enter employee id to mark status :"))
-
-    cursor.execute(
+    #======================== Mark Employee status ==========================================
+    def mark_employee_status():
+        employee_id = int(input("Enter employee id to mark status :"))
+        cursor.execute(
         """SELECT * FROM employees
         WHERE employee_id = ?
         """, (employee_id,))
@@ -260,18 +257,17 @@ def mark_employee_status():
             """UPDATE employees
             SET status = ?
             WHERE employee_id = ?
-            """, (status, employee_id))
+            """, (status, employee[0]))
         conn.commit()
-        print(f"Employee with ID {employee_id} status updated successfully!")
+        print(f"Employee with ID {employee} status updated successfully!")
     else:
-        print(f"\nEmployee with ID {employee_id} not found.")
+        print(f"\nEmployee with ID {employee} not found.")
 
 
-#==================================== Employee status report ==========================================
-
-def attendance_report():
-    cursor.execute("""
-    SELECT employee_id,
+    #============================= Employee status report ==================================
+    def attendance_report():
+        cursor.execute("""
+        SELECT employee_id,
         name,
         department,
         status
@@ -294,8 +290,7 @@ def attendance_report():
             --------------------------------------------
             """)
 
-
-# ================== Main Menu ==================
+#================== Main Menu ==================
 while True:
     print("""
 ================== Employee Management System ==================

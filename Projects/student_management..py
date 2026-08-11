@@ -313,7 +313,7 @@ class Student:
       Attendance : {student[5]}
       """)
 
-      confirm = input("Are you sure about to delete this partcular student?(Y/N): ").upper()
+      confirm = input("Are you sure about to delete this particular student?(Y/N): ").upper()
 
       if confirm == "Y" :
         cursor.execute("""
