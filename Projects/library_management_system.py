@@ -20,7 +20,7 @@ quantity INTEGER,
 available INTEGER
 )
 """)
-print(" Books Table created successfully")
+print( " Books Table created successfully " )
 #================= ADD BOOK ==============================
 def add_book():
     title = input("Enter book title: ")
