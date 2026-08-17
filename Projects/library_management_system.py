@@ -66,11 +66,36 @@ Quantity: {book[4]}
 Available: {book[5]}
 """)
 
+#=============== Search book ===========================================
+def search_book():
+    book_id = int(input("Enter book id: "))
+
+    cursor.execute("""SELECT * FROM books
+    WHERE book_id = ?""",(book_id,)
+    )
+    book = cursor.fetchone()
+    
+    if book:
+        print("=========BOOKS Details=========")
+    
+        print(f"""
+            Book ID: {book[0]}
+            Title: {book[1]}
+            Author: {book[2]}
+            Category: {book[3]}
+            Quantity: {book[4]}
+            Available: {book[5]}
+        """)
+    else:
+        print("Book is not found")
+
+
 # ============ MAIN MENU ===================================
 while True:
     print("\n1. Add Book")
     print("2. View Books")
-    print("3. Exit")
+    print("3.search by id")
+    print("4. Exit")
 
     choice = input("Enter your choice: ")
 
@@ -78,8 +103,9 @@ while True:
         add_book()
     elif choice == "2":
         view_books()
-
     elif choice == "3":
+        search_book()
+    elif choice == "4":
         print("Thank you for visiting!")
         conn.close()
         break
