@@ -89,13 +89,58 @@ def search_book():
     else:
         print("Book is not found")
 
+#=============================== Update Book ===========================================
+def update_book():
+    book_id = int(input("Enter book id: "))
+
+    cursor.execute("""SELECT * FROM books
+    WHERE book_id = ?""",(book_id,)
+    )
+    book = cursor.fetchone()
+
+    if book:
+        print("=========BOOKS Details=========")
+    
+        print(f"""
+            Book ID: {book[0]}
+            Title: {book[1]}
+            Author: {book[2]}
+            Category: {book[3]}
+            Quantity: {book[4]}
+            Available: {book[5]}
+        """)
+        print("----------------------------------------")
+        print("Update Book Details")
+        print("----------------------------------------")
+        Title = input("Enter new title: ")
+        Author = input("Enter new author: ")
+        Category = input("Enter new category: ")
+        Quantity = int(input("Enter new quantity: "))
+
+        cursor.execute("""
+        UPDATE books
+        SET 
+            title = ?,
+            author = ?,
+            category = ?,
+            quantity = ?,
+            available = ?
+        WHERE book_id = ?""",
+        (Title, Author, Category, Quantity, Quantity, book_id))
+        conn.commit()
+        
+        print("Book details updated successfully")
+    else:
+        print("Book is not found")
+        
 
 # ============ MAIN MENU ===================================
 while True:
     print("\n1. Add Book")
     print("2. View Books")
-    print("3.search by id")
-    print("4. Exit")
+    print("3. Search by ID")
+    print("4. Update Book")
+    print("5. Exit")
 
     choice = input("Enter your choice: ")
 
@@ -106,6 +151,8 @@ while True:
     elif choice == "3":
         search_book()
     elif choice == "4":
+        update_book()
+    elif choice == "5":
         print("Thank you for visiting!")
         conn.close()
         break
