@@ -8,40 +8,49 @@ cursor = conn.cursor()
 print("Database connected successfully")
 print("Welcome to the Library Management System")
 
+
 # ============ CREATE TABLE ===============================
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS books(
     book_id INTEGER PRIMARY KEY,
-    title TEXT,
-    author TEXT,
-    category TEXT,
-    quantity INTEGER,
-    available INTEGER
+    title TEXT NOT NULL,
+    author TEXT NOT NULL,
+    category TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    available INTEGER NOT NULL
 )
 """)
 
+conn.commit()
+
 print("Books Table created successfully")
 
-# Add the available quantity column if it doesn't exist (for schema evolution)
+
+# ============ ADD AVAILABLE COLUMN IF MISSING =============
+# This is useful if an older library.db already exists
 try:
-    cursor.execute("ALTER TABLE books ADD COLUMN available INTEGER DEFAULT 0")
+    cursor.execute(
+        "ALTER TABLE books ADD COLUMN available INTEGER DEFAULT 0"
+    )
     conn.commit()
-    print("Added 'available' column to books table (if it was missing).")
+    print("'available' column added successfully.")
 except sqlite3.OperationalError as e:
     if "duplicate column name" in str(e):
         print("'available' column already exists.")
     else:
-        raise # Re-raise other operational errors
+        raise
 
-#===================Book class=========================
+
+# =================== BOOK CLASS ==========================
 class Book:
+
     def __init__(self, title, author, category, quantity):
         self.title = title
         self.author = author
         self.category = category
         self.quantity = quantity
-      
-    #============TITLE VALIDATION FUNCTIONS ========================
+
+    # ============ TITLE VALIDATION ========================
     @staticmethod
     def validate_title(title):
 
@@ -49,8 +58,14 @@ class Book:
             print("Title cannot be empty")
             return False
 
-        if not re.fullmatch(r"[A-Za-z0-9\s:,'!?&.+-]+", title):
-            print("Title should contain only letters, numbers, spaces and basic punctuation")
+        if not re.fullmatch(
+            r"[A-Za-z0-9\s:,'!?&.+()\-]+",
+            title
+        ):
+            print(
+                "Title should contain only letters, numbers, "
+                "spaces and basic punctuation"
+            )
             return False
 
         if len(title.strip()) < 2:
@@ -59,15 +74,19 @@ class Book:
 
         return True
 
-    #=========== AUTHOR VALIDATION FUNCTIONS ========================
+    # ============ AUTHOR VALIDATION =======================
     @staticmethod
     def validate_author(author):
+
         if author.strip() == "":
             print("Author name cannot be empty")
             return False
 
-        if not re.fullmatch(r"[A-Za-z\s]+", author):
-            print("Author name should contain only letters and spaces")
+        if not re.fullmatch(r"[A-Za-z\s.]+", author):
+            print(
+                "Author name should contain only letters, "
+                "spaces and dots"
+            )
             return False
 
         if len(author.strip()) < 2:
@@ -76,10 +95,10 @@ class Book:
 
         return True
 
-    #=========== CATEGORY VALIDATION FUNCTIONS ========================
+    # ============ CATEGORY VALIDATION =====================
     @staticmethod
-    def validate_category(category):    
-        
+    def validate_category(category):
+
         if category.strip() == "":
             print("Category cannot be empty")
             return False
@@ -94,39 +113,44 @@ class Book:
 
         return True
 
-    #========== QUANTITY VALIDATION FUNCTIONS ========================
-    @staticmethod       
+    # ============ QUANTITY VALIDATION =====================
+    @staticmethod
     def validate_quantity(quantity):
+
         if not isinstance(quantity, int) or quantity <= 0:
             print("Quantity should be a positive integer")
             return False
 
         return True
 
+
 # ============ ADD BOOK ====================================
 def add_book():
-    #============= TITLE VALIDATION =========================
+
+    print("\n========== ADD BOOK ==========")
+
+    # -------- TITLE VALIDATION --------
     while True:
-        title = input("Enter book title: ")
+        title = input("Enter book title: ").strip()
+
         if Book.validate_title(title):
             break
-    #================Author validation============================
+
+    # -------- AUTHOR VALIDATION --------
     while True:
-        author = input("Enter author name: ")
-        if Book.validate_author(author): 
+        author = input("Enter author name: ").strip()
+
+        if Book.validate_author(author):
             break
-    #================Category validation===========================
+
+    # -------- CATEGORY VALIDATION --------
     while True:
-        category = input("Enter category: ")
+        category = input("Enter category: ").strip()
+
         if Book.validate_category(category):
             break
-    #==================== quantity validation===========================
-    while True:
-        quantity = input("Enter quantity: ")
-        if Book.validate_quantity(quantity):
-            quantity = int(quantity)
-            break
-    # Quantity Validation
+
+    # -------- QUANTITY VALIDATION --------
     while True:
         try:
             quantity = int(input("Enter quantity: "))
@@ -137,27 +161,32 @@ def add_book():
         except ValueError:
             print("Quantity should be a valid integer")
 
-    # Duplicate Book Check
-    cursor.execute("SELECT * FROM books WHERE title = ? AND author = ?",(title.strip(), author.strip()))
+    # -------- DUPLICATE BOOK CHECK --------
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE title = ? AND author = ?
+    """, (title, author))
 
-    if cursor.fetchone()[0]:
+    book = cursor.fetchone()
+
+    if book:
         print("This book is already registered")
         return
 
-    # Insert Book
+    # -------- INSERT BOOK --------
     cursor.execute("""
-    INSERT INTO books(
+        INSERT INTO books(
+            title,
+            author,
+            category,
+            quantity,
+            available
+        )
+        VALUES (?, ?, ?, ?, ?)
+    """, (
         title,
         author,
         category,
-        quantity,
-        available
-    )
-    VALUES (?, ?, ?, ?, ?)
-    """, (
-        title.strip(),
-        author.strip(),
-        category.strip(),
         quantity,
         quantity
     ))
@@ -165,161 +194,280 @@ def add_book():
     conn.commit()
 
     print("Book added successfully")
-    
+
+
 # ============ VIEW BOOKS ==================================
 def view_books():
+
+    print("\n========== AVAILABLE BOOKS ==========")
+
     cursor.execute("SELECT * FROM books")
     books = cursor.fetchall()
 
     if len(books) == 0:
         print("No Books Found")
-    else:
-        print("========== Available Books List ==============")
+        return
 
-        for book in books:
-            print(f"""
-Book ID: {book[0]}
-Title: {book[1]}
-Author: {book[2]}
-Category: {book[3]}
-Quantity: {book[4]}
-Available: {book[5]}
+    for book in books:
+
+        print(f"""
+Book ID    : {book[0]}
+Title      : {book[1]}
+Author     : {book[2]}
+Category   : {book[3]}
+Quantity   : {book[4]}
+Available  : {book[5]}
+----------------------------------------
 """)
 
-#=============== SEARCH BOOK ===========================================
+
+# ============ SEARCH BOOK ================================
 def search_book():
+
+    print("\n========== SEARCH BOOK ==========")
+
     try:
-        book_id = int(input("Enter book id: "))
+        book_id = int(input("Enter book ID: "))
+
     except ValueError:
         print("Invalid input. Please enter a valid book ID.")
         return
 
-    cursor.execute("""SELECT * FROM books
-    WHERE book_id = ?""",(book_id,)
-    )
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE book_id = ?
+    """, (book_id,))
+
     book = cursor.fetchone()
-    
+
     if book:
-        print("=========BOOKS Details=========")
-    
+
+        print("\n========= BOOK DETAILS =========")
+
         print(f"""
-            Book ID: {book[0]}
-            Title: {book[1]}
-            Author: {book[2]}
-            Category: {book[3]}
-            Quantity: {book[4]}
-            Available: {book[5]}
-        """)
+Book ID    : {book[0]}
+Title      : {book[1]}
+Author     : {book[2]}
+Category   : {book[3]}
+Quantity   : {book[4]}
+Available  : {book[5]}
+""")
+
     else:
         print("Book is not found")
 
-#=============================== UPDATE BOOK ===========================================
+
+# ============ UPDATE BOOK ================================
 def update_book():
+
+    print("\n========== UPDATE BOOK ==========")
+
+    # -------- BOOK ID VALIDATION --------
     try:
-        book_id = int(input("Enter book id: "))
+        book_id = int(input("Enter book ID: "))
+
     except ValueError:
         print("Invalid input. Please enter a valid book ID.")
         return
 
-    cursor.execute("""SELECT * FROM books
-    WHERE book_id = ?""",(book_id,)
-    )
+    # -------- FIND BOOK --------
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE book_id = ?
+    """, (book_id,))
+
     book = cursor.fetchone()
 
-    if book:
-        print("=========BOOKS Details=========")
-    
-        print(f"""
-            Book ID: {book[0]}
-            Title: {book[1]}
-            Author: {book[2]}
-            Category: {book[3]}
-            Quantity: {book[4]}
-            Available: {book[5]}
-        """)
-        print("----------------------------------------")
-        print("Update Book Details")
-        print("----------------------------------------")
-        Title = input("Enter new title: ")
-        Author = input("Enter new author: ")
-        Category = input("Enter new category: ")
-        Quantity = int(input("Enter new quantity: "))
+    if not book:
+        print("Book is not found")
+        return
 
-        cursor.execute("""
+    # -------- DISPLAY CURRENT DETAILS --------
+    print("\n========= CURRENT BOOK DETAILS =========")
+
+    print(f"""
+Book ID    : {book[0]}
+Title      : {book[1]}
+Author     : {book[2]}
+Category   : {book[3]}
+Quantity   : {book[4]}
+Available  : {book[5]}
+""")
+
+    print("----------------------------------------")
+    print("Enter New Book Details")
+    print("----------------------------------------")
+
+    # -------- NEW TITLE --------
+    while True:
+        title = input("Enter new title: ").strip()
+
+        if Book.validate_title(title):
+            break
+
+    # -------- NEW AUTHOR --------
+    while True:
+        author = input("Enter new author: ").strip()
+
+        if Book.validate_author(author):
+            break
+
+    # -------- NEW CATEGORY --------
+    while True:
+        category = input("Enter new category: ").strip()
+
+        if Book.validate_category(category):
+            break
+
+    # -------- NEW QUANTITY --------
+    while True:
+        try:
+            quantity = int(input("Enter new quantity: "))
+
+            if Book.validate_quantity(quantity):
+                break
+
+        except ValueError:
+            print("Quantity should be a valid integer")
+
+    # -------- DUPLICATE CHECK --------
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE title = ?
+        AND author = ?
+        AND book_id != ?
+    """, (title, author, book_id))
+
+    duplicate = cursor.fetchone()
+
+    if duplicate:
+        print("Another book with the same title and author already exists.")
+        return
+
+    # -------- UPDATE BOOK --------
+    cursor.execute("""
         UPDATE books
-        SET 
+        SET
             title = ?,
             author = ?,
             category = ?,
             quantity = ?,
             available = ?
-        WHERE book_id = ?""",
-        (Title, Author, Category, Quantity, Quantity, book_id))
-        conn.commit()
-        
-        print("Book details updated successfully")
-    else:
-        print("Book is not found")
+        WHERE book_id = ?
+    """, (
+        title,
+        author,
+        category,
+        quantity,
+        quantity,
+        book_id
+    ))
 
-#==================== DELETE BOOK =======================================
+    conn.commit()
+
+    print("Book details updated successfully")
+
+
+# ============ DELETE BOOK =================================
 def delete_book():
+
+    print("\n========== DELETE BOOK ==========")
+
+    # -------- BOOK ID VALIDATION --------
     try:
-        book_id = int(input("Enter book id: "))
+        book_id = int(input("Enter book ID: "))
+
     except ValueError:
         print("Invalid input. Please enter a valid book ID.")
         return
 
-    cursor.execute("""SELECT * FROM books
-    WHERE book_id = ?""",(book_id,)
-    )
+    # -------- FIND BOOK --------
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE book_id = ?
+    """, (book_id,))
+
     book = cursor.fetchone()
 
-    if book:
-        print("=========BOOKS Details=========")
-        print(f"""
-            Book ID: {book[0]}
-            Title: {book[1]}
-            Author: {book[2]}
-            Category: {book[3]}
-            Quantity: {book[4]}
-            Available: {book[5]}
-            """)
-        confirm = input("Are you sure you want to delete this book? (y/n): ").upper()
-        if confirm == "Y":
-            cursor.execute("DELETE FROM books WHERE book_id = ?", (book_id,))
-            conn.commit()
-            print("Book deleted successfully")
-        else:
-            print("Book deletion cancelled")
-    else:
+    if not book:
         print("Book is not found")
-        
+        return
+
+    # -------- DISPLAY BOOK --------
+    print("\n========= BOOK DETAILS =========")
+
+    print(f"""
+Book ID    : {book[0]}
+Title      : {book[1]}
+Author     : {book[2]}
+Category   : {book[3]}
+Quantity   : {book[4]}
+Available  : {book[5]}
+""")
+
+    # -------- DELETE CONFIRMATION --------
+    confirm = input(
+        "Are you sure you want to delete this book? (y/n): "
+    ).strip().upper()
+
+    if confirm == "Y":
+
+        cursor.execute("""
+            DELETE FROM books
+            WHERE book_id = ?
+        """, (book_id,))
+
+        conn.commit()
+
+        print("Book deleted successfully")
+
+    elif confirm == "N":
+        print("Book deletion cancelled")
+
+    else:
+        print("Invalid choice. Book deletion cancelled")
+
 
 # ============ MAIN MENU ===================================
 while True:
-    print("\n1. Add Book")
+
+    print("\n========================================")
+    print("       LIBRARY MANAGEMENT SYSTEM")
+    print("========================================")
+
+    print("1. Add Book")
     print("2. View Books")
     print("3. Search by ID")
     print("4. Update Book")
     print("5. Delete Book")
     print("6. Exit")
 
-    choice = input("Enter your choice: ")
+    print("========================================")
+
+    choice = input("Enter your choice: ").strip()
 
     if choice == "1":
         add_book()
+
     elif choice == "2":
         view_books()
+
     elif choice == "3":
         search_book()
+
     elif choice == "4":
         update_book()
+
     elif choice == "5":
         delete_book()
+
     elif choice == "6":
-        print("Thank you for visiting!")
+
+        print("\nThank you for using the Library Management System!")
+
         conn.close()
+
         break
 
     else:
-        print("Invalid choice")
+        print("Invalid choice. Please select 1-6.")
