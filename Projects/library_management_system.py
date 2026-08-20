@@ -1,4 +1,5 @@
 import sqlite3
+import re
 
 # ============ DATABASE CONNECTION ========================
 conn = sqlite3.connect("library.db")
@@ -21,31 +22,150 @@ CREATE TABLE IF NOT EXISTS books(
 
 print("Books Table created successfully")
 
+# Add the available quantity column if it doesn't exist (for schema evolution)
+try:
+    cursor.execute("ALTER TABLE books ADD COLUMN available INTEGER DEFAULT 0")
+    conn.commit()
+    print("Added 'available' column to books table (if it was missing).")
+except sqlite3.OperationalError as e:
+    if "duplicate column name" in str(e):
+        print("'available' column already exists.")
+    else:
+        raise # Re-raise other operational errors
+
+#===================Book class=========================
+class Book:
+    def __init__(self, title, author, category, quantity):
+        self.title = title
+        self.author = author
+        self.category = category
+        self.quantity = quantity
+      
+    #============TITLE VALIDATION FUNCTIONS ========================
+    @staticmethod
+    def validate_title(title):
+
+        if title.strip() == "":
+            print("Title cannot be empty")
+            return False
+
+        if not re.fullmatch(r"[A-Za-z0-9\s:,'!?&.+-]+", title):
+            print("Title should contain only letters, numbers, spaces and basic punctuation")
+            return False
+
+        if len(title.strip()) < 2:
+            print("Title should be at least 2 characters long")
+            return False
+
+        return True
+
+    #=========== AUTHOR VALIDATION FUNCTIONS ========================
+    @staticmethod
+    def validate_author(author):
+        if author.strip() == "":
+            print("Author name cannot be empty")
+            return False
+
+        if not re.fullmatch(r"[A-Za-z\s]+", author):
+            print("Author name should contain only letters and spaces")
+            return False
+
+        if len(author.strip()) < 2:
+            print("Author name should be at least 2 characters long")
+            return False
+
+        return True
+
+    #=========== CATEGORY VALIDATION FUNCTIONS ========================
+    @staticmethod
+    def validate_category(category):    
+        
+        if category.strip() == "":
+            print("Category cannot be empty")
+            return False
+
+        if not re.fullmatch(r"[A-Za-z\s]+", category):
+            print("Category should contain only letters and spaces")
+            return False
+
+        if len(category.strip()) < 2:
+            print("Category should be at least 2 characters long")
+            return False
+
+        return True
+
+    #========== QUANTITY VALIDATION FUNCTIONS ========================
+    @staticmethod       
+    def validate_quantity(quantity):
+        if not isinstance(quantity, int) or quantity <= 0:
+            print("Quantity should be a positive integer")
+            return False
+
+        return True
 
 # ============ ADD BOOK ====================================
 def add_book():
-    title = input("Enter book title: ")
-    author = input("Enter author name: ")
-    category = input("Enter category: ")
-    quantity = int(input("Enter quantity: "))
+    #============= TITLE VALIDATION =========================
+    while True:
+        title = input("Enter book title: ")
+        if Book.validate_title(title):
+            break
+    #================Author validation============================
+    while True:
+        author = input("Enter author name: ")
+        if Book.validate_author(author): 
+            break
+    #================Category validation===========================
+    while True:
+        category = input("Enter category: ")
+        if Book.validate_category(category):
+            break
+    #==================== quantity validation===========================
+    while True:
+        quantity = input("Enter quantity: ")
+        if Book.validate_quantity(quantity):
+            quantity = int(quantity)
+            break
+    # Quantity Validation
+    while True:
+        try:
+            quantity = int(input("Enter quantity: "))
 
+            if Book.validate_quantity(quantity):
+                break
+
+        except ValueError:
+            print("Quantity should be a valid integer")
+
+    # Duplicate Book Check
+    cursor.execute("SELECT * FROM books WHERE title = ? AND author = ?",(title.strip(), author.strip()))
+
+    if cursor.fetchone()[0]:
+        print("This book is already registered")
+        return
+
+    # Insert Book
     cursor.execute("""
     INSERT INTO books(
-        title, author, category, quantity, available
-    )
-    VALUES (?, ?, ?, ?, ?)
-    """, (
         title,
         author,
         category,
-        quantity, # Total quantity of books
-        quantity  # Available quantity of books (initially same as total quantity)
+        quantity,
+        available
+    )
+    VALUES (?, ?, ?, ?, ?)
+    """, (
+        title.strip(),
+        author.strip(),
+        category.strip(),
+        quantity,
+        quantity
     ))
 
     conn.commit()
 
     print("Book added successfully")
-
+    
 # ============ VIEW BOOKS ==================================
 def view_books():
     cursor.execute("SELECT * FROM books")
@@ -66,9 +186,13 @@ Quantity: {book[4]}
 Available: {book[5]}
 """)
 
-#=============== Search book ===========================================
+#=============== SEARCH BOOK ===========================================
 def search_book():
-    book_id = int(input("Enter book id: "))
+    try:
+        book_id = int(input("Enter book id: "))
+    except ValueError:
+        print("Invalid input. Please enter a valid book ID.")
+        return
 
     cursor.execute("""SELECT * FROM books
     WHERE book_id = ?""",(book_id,)
@@ -89,9 +213,13 @@ def search_book():
     else:
         print("Book is not found")
 
-#=============================== Update Book ===========================================
+#=============================== UPDATE BOOK ===========================================
 def update_book():
-    book_id = int(input("Enter book id: "))
+    try:
+        book_id = int(input("Enter book id: "))
+    except ValueError:
+        print("Invalid input. Please enter a valid book ID.")
+        return
 
     cursor.execute("""SELECT * FROM books
     WHERE book_id = ?""",(book_id,)
@@ -133,9 +261,13 @@ def update_book():
     else:
         print("Book is not found")
 
-#==================== Delete Book =======================================
+#==================== DELETE BOOK =======================================
 def delete_book():
-    book_id = int(input("Enter book id: "))
+    try:
+        book_id = int(input("Enter book id: "))
+    except ValueError:
+        print("Invalid input. Please enter a valid book ID.")
+        return
 
     cursor.execute("""SELECT * FROM books
     WHERE book_id = ?""",(book_id,)
