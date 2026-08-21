@@ -1,5 +1,8 @@
 import sqlite3
 import re
+#=================== Admin Credentials ====================
+ADMIN_USERNAME = "admin"
+ADMIN_PASSWORD = "admin123"
 
 # ============ DATABASE CONNECTION ========================
 conn = sqlite3.connect("library.db")
@@ -427,41 +430,65 @@ Available  : {book[5]}
     else:
         print("Invalid choice. Book deletion cancelled")
 
+#================== Log In ================================
+@staticmethod
+def login():
+    attempts = 3
+    while attempts > 0:
+        print("\n========== ADMIN LOGIN ==========")
+        username = input("Enter username: ").strip()
+        password = input("Enter password: ").strip()
+
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            print("Login successful.")
+            print("Welcome to the Library Management System!")
+            return True
+        
+        else:
+            attempts -= 1
+            print("Invalid Username or Password")
+           
+            if attempts > 0:
+                print(f"Remaining attempts :{attempts}")
+
+    print("Your attempts exceed the Maximum")  
+
 
 # ============ MAIN MENU ===================================
-while True:
+if login():
+    while True:
 
-    print("\n========================================")
-    print("       LIBRARY MANAGEMENT SYSTEM")
-    print("========================================")
+     print("\n========================================")
+     print("       LIBRARY MANAGEMENT SYSTEM")
+     print("========================================")
 
-    print("1. Add Book")
-    print("2. View Books")
-    print("3. Search by ID")
-    print("4. Update Book")
-    print("5. Delete Book")
-    print("6. Exit")
+     print("1. Add Book")
+     print("2. View Books")
+     print("3. Search by ID")
+     print("4. Update Book")
+     print("5. Delete Book")
+     print("6. Exit")
 
-    print("========================================")
+     print("========================================")
 
-    choice = input("Enter your choice: ").strip()
+     choice = input("Enter your choice: ").strip()
 
-    if choice == "1":
-        add_book()
+     if choice == "1":
+         add_book()
 
-    elif choice == "2":
+     elif choice == "2":
         view_books()
 
-    elif choice == "3":
+     elif choice == "3":
         search_book()
 
-    elif choice == "4":
+     elif choice == "4":
         update_book()
 
-    elif choice == "5":
+     elif choice == "5":
         delete_book()
 
-    elif choice == "6":
+     elif choice == "6":
 
         print("\nThank you for using the Library Management System!")
 
@@ -469,5 +496,5 @@ while True:
 
         break
 
-    else:
+     else:
         print("Invalid choice. Please select 1-6.")
