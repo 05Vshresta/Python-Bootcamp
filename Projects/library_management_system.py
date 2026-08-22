@@ -430,6 +430,67 @@ Available  : {book[5]}
 
     else:
         print("Invalid choice. Book deletion cancelled")
+    # ============ MARK BOOK AVAILABILITY ======================
+
+def mark_availability():
+    try:
+        book_id = int(input("Enter Book ID: "))
+    except ValueError:
+        print("Invalid Book ID")
+        print("Please enter a number")
+        return
+
+    # -------- FIND BOOK --------
+    cursor.execute("""
+        SELECT * FROM books
+        WHERE book_id = ?
+    """, (book_id,))
+
+    book = cursor.fetchone()
+
+    if book:
+        print("========= CURRENT BOOK DETAILS =========")
+        print(f"""
+Book ID    : {book[0]}
+Title      : {book[1]}
+Author     : {book[2]}
+Category   : {book[3]}
+Quantity   : {book[4]}
+Available  : {book[5]}
+""")
+
+        # -------- BOOK AVAILABILITY VALIDATION --------
+        try:
+            available = int(
+                input("Enter Available Quantity: ")
+            )
+        except ValueError:
+            print("Invalid Availability Quantity")
+            print("Please enter a number")
+            return
+
+        # -------- AVAILABLE QUANTITY VALIDATION --------
+        if available < 0:
+            print("Available quantity cannot be negative")
+            return
+
+        if available > book[4]:
+            print("Available quantity cannot be greater than total quantity")
+            return
+
+        # -------- UPDATE BOOK AVAILABILITY --------
+        cursor.execute("""
+            UPDATE books
+            SET available = ?
+            WHERE book_id = ?
+        """, (available, book_id))
+
+        conn.commit()
+
+        print("Book availability marked successfully")
+
+    else:
+        print("Book is not found")
 
 #================== Log In ================================
 @staticmethod
@@ -453,7 +514,6 @@ def login():
                 print(f"Remaining attempts :{attempts}")
 
     print("Your attempts exceed the Maximum")  
-
 
 # ============ MAIN MENU ===================================
 if login():
