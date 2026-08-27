@@ -299,14 +299,14 @@ class Book:
             for book in books:
 
                 print(f"""
-Book ID    : {book[0]}
-Title      : {book[1]}
-Author     : {book[2]}
-Category   : {book[3]}
-Quantity   : {book[4]}
-Available  : {book[5]}
-----------------------------------------------
-""")
+                Book ID    : {book[0]}
+                Title      : {book[1]}
+                Author     : {book[2]}
+                Category   : {book[3]}
+                Quantity   : {book[4]}
+                Available  : {book[5]}
+                ----------------------------------------------
+                """)
 
     # ========================================================
     # SEARCH BOOK BY ID
