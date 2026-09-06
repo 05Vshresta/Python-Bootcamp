@@ -16,13 +16,16 @@ else:
         grade = "A"
         result = "Pass"
     elif marks >= 70:
-        grade = "B"
+        grade = "B+"
         result = "Pass"
     elif marks >= 60:
-        grade = "C"
+        grade = "B"
         result = "Pass"
     elif marks >= 50:
-        grade = "D"
+        grade = "C+"
+        result = "Pass"
+    elif marks >= 40:
+        grade = "C"
         result = "Pass"
     else:
         grade = "F"
