@@ -161,8 +161,7 @@ class Employee:
       self.email,
       self.department,
       self.salary
-    )
-    )
+    ))
 
     conn.commit()
     print("Employee Registered Successfully")
@@ -259,9 +258,11 @@ Attendance: {employee[6]}
     Salary: {employee[5]}
     Attendance:{employee[6]}
     """)
+      
       print("------------------------------------------------------------")
       print("===================== Update Employee Details =====================")
       print("------------------------------------------------------------")
+
       name = input("Enter Employee Name: ")
       mobile = input("Enter Employee Mobile: ")
       email = input("Enter Employee Email: ")
@@ -284,6 +285,7 @@ Attendance: {employee[6]}
         salary,
         employee_id
       ))
+      
       conn.commit()
       print("Employee Details Updated Successfully")
     else:
